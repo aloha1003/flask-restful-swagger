@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="stylesheets/style.css" rel="stylesheet">
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.6.1.min.js">
+    </script><script type="text/javascript" src="js/socket.io.js"></script>
+    <script>    
+
+
+WEB_SOCKET_SWF_LOCATION = "/WebSocketMain.swf";
+WEB_SOCKET_DEBUG = true;
+
+// socket.io specific code
+var socket = io.connect();
+
+socket.on('connect', function () {
+    $('#login').addClass('connected');
+});
+
+socket.on('announcement', function (msg) {
+    $('#lines').append($('<p>').append($('<em>').text(msg)));
+});
+
+socket.on('nicknames', function (nicknames) {
+    $('#nicknames').empty().append($('<span>Online: </span>'));
+    for (var i in nicknames) {
+      $().append($('<b>').text(nicknames[i]));
+    }
+});
+
+socket.on('nicknames', function (nicknames) {
+    $('#nicknames').empty().append($('<span>Online: </span>'));
+    for (var i in nicknames) {
+      $().append($('<b>').text(nicknames[i]));
+    }
+});
+
+socket.on('line_login', function (nicknames) {
+    $('#nicknames').empty().append($('<span>Online: </span>'));
+    for (var i in nicknames) {
+      $().append($('<b>').text(nicknames[i]));
+    }
+});
+
+socket.on('msg_to_room', message);
+socket.on('reconnect', function () {
+    $('#lines').remove();
+    message('System', 'Reconnected to the server');
+});
+
+socket.on('reconnecting', function () {
+    message('System', 'Attempting to re-connect to the server');
+});
+
+socket.on('error', function (e) {
+    message('System', e ? e : 'A unknown error occurred');
+});
+
+function message (from, msg) {
+    $('#lines').append($('<p>').append($('<b>').text(from), msg));
+}
+
+// dom manipulation
+$(function () {
+    $('#line_login').submit(function (ev) {
+        if (( $('#email').val() =='') || ( $('#password').val() == '' )) {
+            alert('帳密不得為空白');
+            return false;
+        }
+        socket.emit('line_login', {'email':$('#email').val(),'password':$('#password').val()}, function (set) {
+            if (!set) {
+                clear();
+                return $('#login').addClass('nickname-set');
+            }
+            $('#nickname-err').css('visibility', 'visible');
+        });
+        return false;
+    });
+
+    // $('#send-message').submit(function () {
+    //     message('me', $('#message').val());
+    //     socket.emit('user message', $('#message').val());
+    //     clear();
+    //     $('#lines').get(0).scrollTop = 10000000;
+    //     return false;
+    // });
+
+    function clear () {
+        $('#message').val('').focus();
+    };
+});
+    </script>
+  </head>
+<body>
+  <div id="login">
+
+    <div id="nickname">
+      <form id="line_login" class="wrap">
+        <p>Please type in your Line's Email  and Password.</p>
+        <input id="email" value="knives1003@gmail.com">
+        <input id="password" type="password" value="wcwei919">
+
+        <button id="submit">Send</button>
+        
+    </form>
+    </div>
+    <div id="connecting">
+      <div class="wrap">Connecting to socket.io server</div>
+    </div>
+    <div id="messages">
+      <div id="nicknames"></div>
+      <div id="lines"></div>
+    </div>
+    <form id="send-message">
+      <input id="message">
+      <button>Send</button>
+    </form>
+  </div>
+</body>
+</html>
